@@ -35,6 +35,8 @@ class CustomersService:
         customer = CustomerDB(name=create_customer.name,
                               email=create_customer.email,
                               phone_number=create_customer.phone_number,
+                              vehicle_number=create_customer.vehicle_number,
+                              gender=create_customer.gender,
                               hashed_password=hash_password(password=create_customer.password))
 
 
@@ -97,16 +99,20 @@ class CustomersService:
                 detail="There's no customer with the provided email address.")
 
 
-    # async def get_customer(self,
-    #                        id: int):
-    #     customer = await self.repo.get_customer_by_id(id=id)
+    async def get_customer(self,
+                           id: int):
 
-    #     if(customer):
-    #         customer = CustomerDB.from_orm(customer)
-    #         customer = CustomerInReservation(name=customer.name,
-    #                                          phone_number=customer.phone_number,
-    #                                          vehicle_number="1234")
-    #         return customer
+        customer = await self.repo.get_customer_by_id(id=id)
 
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-    #                         detail="Customer wasn't found. It may have been deleted.")
+        if(customer):
+            customer = CustomerDB.from_orm(customer)
+            customer = BaseCustomer(name=customer.name,
+                                    email=customer.email,
+                                    phone_number=customer.phone_number,
+                                    gender=customer.gender,
+                                    vehicle_number=customer.vehicle_number
+                                    )
+            return customer
+
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Customer wasn't found. It may have been deleted.")

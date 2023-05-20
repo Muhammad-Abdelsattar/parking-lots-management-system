@@ -1,4 +1,4 @@
-from sqlalchemy import DateTime, Boolean, Column, Integer,String, Float, ForeignKey, Enum
+from sqlalchemy import NCHAR,DateTime, Boolean, Column, Integer,String, Float, ForeignKey, Enum
 from .base_model import Base
 
 class OfflineCustomer(Base):
@@ -18,5 +18,5 @@ class Customer(Base):
     email = Column(String(255),unique = True)
     gender = Column(String(1),)
     phone_number = Column(String(15),unique = True)
-    vehicle_number = Column(String(10),unique = True)
+    vehicle_number = Column(String(15),unique = True)
     hashed_password = Column(String(255))
