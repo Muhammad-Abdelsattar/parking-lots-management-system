@@ -325,7 +325,7 @@ class ReservationsService:
                                       total_pay=reservation.total_pay,
                                       phone_number=customer.phone_number,
                                       customer_name=customer.name,
-                                      vehicle_number="123")
+                                         vehicle_number=customer.vehicle_number)
 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="The requested resources has data that don't exist anymore.")
