@@ -290,7 +290,7 @@ class ReservationsService:
         if(reservation):
             reservation = OnlineReservationDB.from_orm(reservation)
 
-            if(self._lot_owns_reservation(lot_id = lot_id,
+            if(await self._lot_owns_reservation(lot_id = lot_id,
                                           reservation = reservation)):
                 return await self._get_lot_detailed_online_reservation_helper(reservation=reservation)
             else:
@@ -343,6 +343,8 @@ class ReservationsService:
             if(slot):
                 slot = ParkingSlotDB.from_orm(slot)
                 if(slot.lot_id == lot_id):
+                    return True
+                return False
 
 
 

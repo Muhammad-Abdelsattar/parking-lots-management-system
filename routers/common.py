@@ -30,32 +30,32 @@ class PaginatedParams:
 
 
 
-async def get_current_user(authorization: str = Header(default="Bearer"),
+async def get_current_user(security: str = Header(default="Bearer"),
                            customers_service: CustomersService = Depends()):
 
-    auth_type_token = authorization.split(' ')
+    auth_type_token = security.split(' ')
 
     if(len(auth_type_token)>1):
         token = auth_type_token[1]
     else:
-        token = authorization
+        token = security
 
     return await customers_service.get_customer_from_token(token=token)
 
 
-async def get_current_parkinglot(authorization: str = Header(None),
+async def get_current_parkinglot(security: str = Header(None),
                            lots_service: ParkingLotsService = Depends()):
 
-    return await lots_service.get_lot_from_token(token=authorization)
+    return await lots_service.get_lot_from_token(token=security)
 
 
-async def get_user(authorization: str = Header(None),
+async def get_user(security: str = Header(None),
                    lots_service: ParkingLotsService = Depends(),
                    customers_service: CustomersService = Depends()):
 
     user = {}
     try:
-        token_data = decode_access_token(token=authorization)
+        token_data = decode_access_token(token=security)
         token_data = JWTSchema(**token_data)
 
         if(token_data.role == EnumUserRole.parkinglot):
