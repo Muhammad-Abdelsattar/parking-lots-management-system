@@ -20,3 +20,11 @@ class Customer(Base):
     phone_number = Column(String(15),unique = True)
     vehicle_number = Column(String(15),unique = True)
     hashed_password = Column(String(255))
+
+
+class SuperUser(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    hashed_password = Column(String(255))

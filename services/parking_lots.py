@@ -64,9 +64,9 @@ class ParkingLotsService:
                 raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
                                     detail="This action is not allowed for this type of user.")
 
-        except :
+        except:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token is not valid."
                 )
 
@@ -127,8 +127,8 @@ class ParkingLotsService:
 
 
     async def get_abstract_parkinglots_data(self,
-                              limit: int,
-                              offset: int,
+                              limit: Optional[int] = None,
+                              offset: Optional[int] = None,
                               order_by:Optional[EnumOrderBy] = None,
                               order: Optional[EnumOrder] = None,
                               ):

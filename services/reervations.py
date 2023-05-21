@@ -4,6 +4,7 @@ from typing import Optional,Union
 from fastapi import Depends, HTTPException,status
 from sqlalchemy import select
 from models.reservations import OnlineReservation
+from schemas.jwt import EnumUserRole
 from schemas.customer import CustomerDB
 from schemas.parking_slots import *
 from schemas.parking_lot import *
@@ -155,7 +156,6 @@ class ReservationsService:
         if(reservation):
             reservation = OnlineReservationDB.from_orm(reservation)
             slot = await self.slots_repo.get_slot_by_id(reservation.slot_id)
-            reservation = OnlineReservationDB.from_orm(reservation)
             if(slot):
                 slot = ParkingSlotDB.from_orm(slot)
                 if(slot.lot_id == lot_id):
@@ -203,6 +203,50 @@ class ReservationsService:
                                     detail="Can't end the reservations at this state and time.")
 
 
+    async def get_reservations(self,
+                               user_role: EnumUserRole,
+                               user_id: int,
+                               limit: Optional[int] = None,
+                               offset: Optional[int] = None,
+                               state: Optional[EnumReservationState] = None,
+                               ):
+        if(user_role == EnumUserRole.customer):
+            return await self.get_customer_abstract_online_reservations(customer_id=user_id,
+                                                                        limit=limit,
+                                                                        offset=offset,
+                                                                        state=state)
+
+        elif(user_role == EnumUserRole.parkinglot):
+
+            return await self.get_parkinglot_abstract_online_reservations(lot_id=user_id,
+                                                                        limit=limit,
+                                                                        offset=offset,
+                                                                        state=state)
+
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="User type isn't valid !")
+
+
+    async def get_reservation_details(self,
+                                      user_role: EnumUserRole,
+                                      user_id:int,
+                                      reservation_id:int
+                                      ):
+
+        if(user_role == EnumUserRole.customer):
+            return await self.get_customer_detailed_reservation(customer_id=user_id,
+                                                                reservation_id=reservation_id)
+
+        elif(user_role == EnumUserRole.parkinglot):
+            return await self.get_parkinglot_detailed_reservation(lot_id=user_id,
+                                                                  reservation_id=reservation_id)
+
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="User type isn't valid !")
+
+
     async def get_customer_abstract_online_reservations(self,
                                                customer_id: int,
                                                limit:Optional[int]=None,
@@ -222,22 +266,36 @@ class ReservationsService:
 
 
     async def get_customer_detailed_reservation(self,
+                                                customer_id: int,
                                                 reservation_id: int):
         reservation = await self.online_reservations_repo.get_reservation_by_id(id=reservation_id)
         if(reservation):
             reservation = OnlineReservationDB.from_orm(reservation)
-            return await self._get_customer_detailed_online_reservation_helper(reservation=reservation)
+            if(self._customer_owns_reservation(customer_id = customer_id,
+                                               reservation = reservation)):
+                return await self._get_customer_detailed_online_reservation_helper(reservation=reservation)
+            else:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                    detail="You don't own this reservation.")
 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="No reservation with the provided id was found.")
 
 
     async def get_parkinglot_detailed_reservation(self,
+                                                  lot_id:int,
                                                   reservation_id: int):
+
         reservation = await self.online_reservations_repo.get_reservation_by_id(id = reservation_id)
         if(reservation):
             reservation = OnlineReservationDB.from_orm(reservation)
-            return await self._get_lot_detailed_online_reservation_helper(reservation=reservation)
+
+            if(self._lot_owns_reservation(lot_id = lot_id,
+                                          reservation = reservation)):
+                return await self._get_lot_detailed_online_reservation_helper(reservation=reservation)
+            else:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                    detail="You don't own this reservation.")
 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="No reservation with the provided id was found.")
@@ -245,8 +303,8 @@ class ReservationsService:
 
     async def get_parkinglot_abstract_online_reservations(self,
                                                           lot_id: int,
-                                                          limit: int,
-                                                          offset: int,
+                                                          limit: Optional[int] = None,
+                                                          offset: Optional[int] = None,
                                                           state: Optional[EnumReservationState] = None):
 
         slots = await self.slots_repo.get_all_parkinglot_slots(lot_id=lot_id)
@@ -268,6 +326,24 @@ class ReservationsService:
 
         else:
             return []
+
+
+    def _customer_owns_reservation(self,
+                                        customer_id:int,
+                                        reservation:OnlineReservationDB):
+        if(reservation.customer_id == customer_id):
+            return True
+        return False
+
+
+    async def _lot_owns_reservation(self,
+                                    lot_id: int,
+                                    reservation: OnlineReservationDB):
+            slot = await self.slots_repo.get_slot_by_id(reservation.slot_id)
+            if(slot):
+                slot = ParkingSlotDB.from_orm(slot)
+                if(slot.lot_id == lot_id):
+
 
 
     async def _get_customer_abstract_online_reservations_helper(self,

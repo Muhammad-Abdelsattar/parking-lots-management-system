@@ -48,11 +48,13 @@ class ParkinglotsRepository:
 
 
     async def get_lots(self,
-                       limit: int,
-                       offset: int,
+                       limit: Optional[int] = None,
+                       offset: Optional[int] = None,
                        order_by:Optional[EnumOrderBy] = None,
                        order:Optional[EnumOrder] = None,
                        ):
+
+        print(limit + offset)
 
         if(order_by):
             if(order == EnumOrder.ascending):
@@ -71,22 +73,28 @@ class ParkinglotsRepository:
                                         offset=offset)
 
         else:
-            lots = await self.get_all_lots()
+            lots = await self.get_lots_ascending(order_by=EnumOrderBy.hourly_pay,
+                                    limit=limit,
+                                    offset=offset)
 
         return lots
 
 
     async def get_lots_ascending(self,
                                  order_by:EnumOrderBy,
-                                 limit: int,
-                                 offset: int):
+                                 limit: Optional[int] = None,
+                                 offset: Optional[int] = None):
 
         column = getattr(ParkingLot,order_by)
-        print(column)
 
-        get_query = select(ParkingLot).\
-            order_by(column.asc()).\
-            slice(offset,limit+offset)
+        if(limit is not None and offset is not None):
+            get_query = select(ParkingLot).\
+                order_by(column.asc()).\
+                slice(offset,limit+offset)
+
+        else:
+            get_query = select(ParkingLot).\
+                order_by(column.asc())
 
         lots = await self.database.fetch_all(get_query)
 
@@ -95,14 +103,18 @@ class ParkinglotsRepository:
 
     async def get_lots_descending(self,
                                   order_by:EnumOrderBy,
-                                  limit: int,
-                                  offset: int):
+                                 limit: Optional[int] = None,
+                                 offset: Optional[int] = None):
 
         column = getattr(ParkingLot,order_by)
 
-        get_query = select(ParkingLot).\
-            order_by(column.desc()).\
-            slice(offset,limit+offset)
+        if(limit is not None and offset is not None):
+            get_query = select(ParkingLot).\
+                order_by(column.desc()).\
+                slice(offset,limit+offset)
+        else:
+            get_query = select(ParkingLot).\
+                order_by(column.desc())
 
         lots = await self.database.fetch_all(get_query)
 

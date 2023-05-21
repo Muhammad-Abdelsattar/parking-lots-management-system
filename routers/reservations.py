@@ -4,7 +4,7 @@ from schemas.parking_lot import ParkingLotDB
 from schemas.reservation import *
 from services.reervations import ReservationsService
 from schemas.customer import CustomerDB
-from .common import PaginatedParams, get_current_user, get_current_parkinglot
+from .common import PaginatedParams, get_current_user, get_current_parkinglot, get_user
 
 
 router = APIRouter(
@@ -25,6 +25,36 @@ async def make_reservation(reservation: MakeReservation,
 
     await reservations_service.make_reservation(lot_id=reservation.lot_id,
                                                 reservation_data =reservation_data)
+
+@router.get('/',
+            status_code=status.HTTP_200_OK,
+            response_model=list[Union[CustomerReservationAbstract,LotReservationAbstract]])
+async def get_reservations(state: Optional[EnumReservationState] = None,
+                           user = Depends(get_user),
+                           pagination: PaginatedParams = Depends(),
+                           reservations_service: ReservationsService = Depends()):
+
+    reservations = await reservations_service.get_reservations(user_role=user["role"],
+                                                               user_id=user["user"].id,
+                                                               limit=pagination.limit,
+                                                               offset=pagination.offset,
+                                                               state=state
+                                                               )
+    return reservations
+
+
+@router.get('/{reservation_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=list[Union[CustomerReservationAbstract,LotReservationAbstract]])
+async def get_reservation_details(reservation_id:int,
+                                  user = Depends(get_user),
+                                  reservations_service: ReservationsService = Depends()):
+
+    reservation = await reservations_service.get_reservation_details(user_role=user["role"],
+                                                                      user_id=user["user"].id,
+                                                                      reservation_id=reservation_id
+                                                                      )
+    return reservation
 
 
 @router.get("/customer",
@@ -51,7 +81,8 @@ async def get_customer_reservation_details(reservation_id:int,
                                            reservations_service: ReservationsService = Depends(),
                                            ):
 
-    reservation = await reservations_service.get_customer_detailed_reservation(reservation_id = reservation_id)
+    reservation = await reservations_service.get_customer_detailed_reservation(reservation_id = reservation_id,
+                                                                               customer_id=customer.id)
     return reservation
 
 
@@ -68,7 +99,6 @@ async def get_parkinglot_reservations(state: Optional[EnumReservationState] = No
                                                                                           limit=pagination.limit,
                                                                                           offset=pagination.offset,
                                                                                           state = state)
-
     return reservations
 
 
@@ -80,7 +110,8 @@ async def get_parkinglot_reservation_details(reservation_id:int,
                                   reservations_service: ReservationsService = Depends(),
                                   ):
 
-    reservation = await reservations_service.get_parkinglot_detailed_reservation(reservation_id = reservation_id)
+    reservation = await reservations_service.get_parkinglot_detailed_reservation(reservation_id = reservation_id,
+                                                                                 lot_id=lot.id)
     return reservation
 
 
