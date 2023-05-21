@@ -43,7 +43,7 @@ class ReservationsService:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                                 detail="The duration can't be less than one hour.")
 
-        customer_reservations = await self.get_customer_online_reservations(customer_id=reservation_data.customer_id,
+        customer_reservations = await self.get_customer_abstract_online_reservations(customer_id=reservation_data.customer_id,
                                                                             state=EnumReservationState.pending)
 
         if(customer_reservations):
