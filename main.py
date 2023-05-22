@@ -1,26 +1,19 @@
-from datetime import datetime
-from typing import Optional
-from fastapi import FastAPI, HTTPException, status, Depends
+from typing import Optional,Any
+from fastapi import FastAPI
 from sqladmin import Admin,ModelView
 from models.base_model import init_models
-from models.customers import SuperUser
+from models.customers import Customer
+from models.parking_lots import ParkingLot,ParkingSlot
+from schemas.parking_slots import CreateParkingSlot
+from repositories.parking_slots import ParkingSlotsRepository
 from routers.customers import router as customers_router
 from routers.reservations import router as reservations_router
 from routers.parking_lots import router as lots_router
-from fastapi.security import OAuth2PasswordBearer
 from core.config import get_settings
 from core.database_config import get_database,engine
-
-from services.customers import CustomersService
+from services.superusers import AdminsService
 from repositories.parking_lots import ParkinglotsRepository
-from fake_data import *
-
-
-reuseable_oauth = OAuth2PasswordBearer(
-    tokenUrl="/login",
-    scheme_name="JWT"
-)
-
+from superusers import CustomersView,ParkinglotsView,ParkingSlotsView
 
 
 server = FastAPI()
@@ -28,19 +21,20 @@ server.include_router(customers_router)
 server.include_router(reservations_router)
 server.include_router(lots_router)
 
-admin = Admin(server,engine)
-
 settings = get_settings()
 
+authentication_backend = AdminsService(secret_key="1234")
 
-class AdminView(ModelView,model=SuperUser):
-    column_list = [SuperUser.name,SuperUser.hashed_password]
+admin = Admin(app=server,engine=engine,authentication_backend=authentication_backend)
 
-admin.add_view(AdminView)
+admin.add_view(CustomersView)
+# admin.add_view(ReservationsView)
+admin.add_view(ParkinglotsView)
+admin.add_view(ParkingSlotsView)
+
 
 @server.on_event("startup")
 async def startup():
-    print("inside startup")
     init_models()
     await get_database().connect()
 

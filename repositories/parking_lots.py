@@ -54,8 +54,6 @@ class ParkinglotsRepository:
                        order:Optional[EnumOrder] = None,
                        ):
 
-        print(limit + offset)
-
         if(order_by):
             if(order == EnumOrder.ascending):
                 lots = await self.get_lots_ascending(order_by=order_by,
@@ -118,61 +116,6 @@ class ParkinglotsRepository:
 
         lots = await self.database.fetch_all(get_query)
 
-        return lots
-
-
-    async def get_highest_cost_lots(self,
-                                  limit: int,
-                                  offset: int):
-        get_query = select(ParkingLot).\
-            order_by(ParkingLot.hourly_pay.desc()).\
-            slice(offset,limit+offset)
-
-        lots = await self.database.fetch_all(get_query)
-        return lots
-
-
-    async def get_highest_allowance_lots(self,
-                                  limit: int,
-                                  offset: int):
-        get_query = select(ParkingLot).\
-            order_by(ParkingLot.allowance_time.desc()).\
-            slice(offset,limit+offset)
-
-        lots = await self.database.fetch_all(get_query)
-        return lots
-
-
-    async def get_least_allowance_lots(self,
-                                  limit: int,
-                                  offset: int):
-        get_query = select(ParkingLot).\
-            order_by(ParkingLot.allowance_time).\
-            slice(offset,limit+offset)
-
-        lots = await self.database.fetch_all(get_query)
-        return lots
-
-
-    async def get_highest_capacity_lots(self,
-                                  limit: int,
-                                  offset: int):
-        get_query = select(ParkingLot).\
-            order_by(ParkingLot.capacity.desc()).\
-            slice(offset,limit+offset)
-
-        lots = await self.database.fetch_all(get_query)
-        return lots
-
-
-    async def get_least_capacity_lots(self,
-                                  limit: int,
-                                  offset: int):
-        get_query = select(ParkingLot).\
-            order_by(ParkingLot.capacity).\
-            slice(offset,limit+offset)
-
-        lots = await self.database.fetch_all(get_query)
         return lots
 
 

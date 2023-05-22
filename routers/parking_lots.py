@@ -38,6 +38,7 @@ async def get_lots(order_by:Optional[EnumOrderBy] = None,
                    pagination:PaginatedParams = Depends(),
                    lots_service: ParkingLotsService=Depends(ParkingLotsService)):
 
+
     return await lots_service.get_abstract_parkinglots_data(order_by=order_by,
                                               order=order,
                                               limit=pagination.limit,

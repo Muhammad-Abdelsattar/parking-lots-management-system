@@ -87,16 +87,28 @@ class OnlineReservationsRepository:
                                             slots_ids:list[int],
                                             state:Optional[EnumReservationState] = None):
 
-        if(state):
-            get_query = select(OnlineReservation).\
-                where(OnlineReservation.slot_id.in_(slots_ids)).\
-                where(OnlineReservation.state == state).\
-                slice(offset,offset+limit)
-        else:
-            get_query = select(OnlineReservation).\
-                where(OnlineReservation.slot_id.in_(slots_ids)).\
-                slice(offset,offset+limit)
+        if(limit and offset):
+            if(state):
+                get_query = select(OnlineReservation).\
+                    where(OnlineReservation.slot_id.in_(slots_ids)).\
+                    where(OnlineReservation.state == state).\
+                    slice(offset,offset+limit)
+            else:
+                get_query = select(OnlineReservation).\
+                    where(OnlineReservation.slot_id.in_(slots_ids)).\
+                    slice(offset,offset+limit)
 
-        reservations = await self.database.fetch_all(get_query)
+            reservations = await self.database.fetch_all(get_query)
+
+        else:
+            if(state):
+                get_query = select(OnlineReservation).\
+                    where(OnlineReservation.slot_id.in_(slots_ids)).\
+                    where(OnlineReservation.state == state)
+            else:
+                get_query = select(OnlineReservation).\
+                    where(OnlineReservation.slot_id.in_(slots_ids))
+
+            reservations = await self.database.fetch_all(get_query)
 
         return reservations

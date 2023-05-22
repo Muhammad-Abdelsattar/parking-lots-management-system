@@ -18,8 +18,8 @@ reuseable_oauth = OAuth2PasswordBearer(
 
 class PaginatedParams:
     def __init__(self,
-                 page: Optional[int],
-                 per_page: Optional[int])  -> None:
+                 page: Optional[int] = None,
+                 per_page: Optional[int] = None)  -> None:
 
         if(page and per_page):
             self.offset = (page - 1) * per_page
@@ -88,7 +88,6 @@ async def get_user(security: str = Header(None),
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token is not valid."
                 )
-
 
     except:
         raise HTTPException(

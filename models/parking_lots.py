@@ -4,26 +4,11 @@ from .base_model import Base
 import enum
 
 
-class EnumParkingLotType(enum.Enum):
-    single_level_garage = 1
-    multi_level_garage = 2
-    underground_garage = 3
-    automated_garage = 4
-
-
-class ParkingLotType(Base):
-    __tablename__ = "parkinglot_types"
-
-    id = Column(Integer,primary_key=True,index=True,autoincrement = True)
-    lot_type = Column(Enum(EnumParkingLotType))
-
-
 class ParkingLot(Base):
     __tablename__ = 'parkinglots'
 
     id = Column(Integer,primary_key=True,index=True,autoincrement = True)
     lot_name = Column(String(255),unique = True)
-    picture = Column(String(255))
     address = Column(String(255))
     description = Column(Text)
     lot_secret = Column(String(255))

@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr
 class EnumUserRole(str,Enum):
     customer = "customer"
     parkinglot = "parkinglot"
+    admin = "admin"
 
 
 class JWTSchema(BaseModel):

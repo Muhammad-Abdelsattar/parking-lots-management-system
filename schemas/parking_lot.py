@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 class BaseParkingLot(BaseModel):
     lot_name : str
-    picture: str
     address: str
     description: str
     lot_secret: str

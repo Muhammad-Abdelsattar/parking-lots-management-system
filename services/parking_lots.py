@@ -104,8 +104,7 @@ class ParkingLotsService:
                                    capacity=parking_lot.capacity,
                                    longitude=parking_lot.longitude,
                                    lattitude=parking_lot.lattitude,
-                                   description=parking_lot.description,
-                                   picture= parking_lot.picture)
+                                   description=parking_lot.description,)
 
 
         await self.lots_repo.add_lot(parking_lot=parking_lot)

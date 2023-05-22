@@ -43,20 +43,6 @@ async def get_reservations(state: Optional[EnumReservationState] = None,
     return reservations
 
 
-@router.get('/{reservation_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=list[Union[CustomerReservationAbstract,LotReservationAbstract]])
-async def get_reservation_details(reservation_id:int,
-                                  user = Depends(get_user),
-                                  reservations_service: ReservationsService = Depends()):
-
-    reservation = await reservations_service.get_reservation_details(user_role=user["role"],
-                                                                      user_id=user["user"].id,
-                                                                      reservation_id=reservation_id
-                                                                      )
-    return reservation
-
-
 @router.get("/customer",
             status_code=status.HTTP_200_OK,
             response_model=list[CustomerReservationAbstract])
@@ -73,19 +59,6 @@ async def get_customer_reservations(state: Optional[EnumReservationState] = None
     return reservations
 
 
-@router.get('/customer/{reservation_id}',
-            status_code=status.HTTP_200_OK,
-            response_model=CustomerReservationDetails)
-async def get_customer_reservation_details(reservation_id:int,
-                                           customer: CustomerDB = Depends(get_current_user),
-                                           reservations_service: ReservationsService = Depends(),
-                                           ):
-
-    reservation = await reservations_service.get_customer_detailed_reservation(reservation_id = reservation_id,
-                                                                               customer_id=customer.id)
-    return reservation
-
-
 @router.get("/parking-lot/",
             status_code=status.HTTP_200_OK,
             response_model=list[Optional[LotReservationAbstract]])
@@ -100,6 +73,19 @@ async def get_parkinglot_reservations(state: Optional[EnumReservationState] = No
                                                                                           offset=pagination.offset,
                                                                                           state = state)
     return reservations
+
+
+@router.get('/customer/{reservation_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=CustomerReservationDetails)
+async def get_customer_reservation_details(reservation_id:int,
+                                           customer: CustomerDB = Depends(get_current_user),
+                                           reservations_service: ReservationsService = Depends(),
+                                           ):
+
+    reservation = await reservations_service.get_customer_detailed_reservation(reservation_id = reservation_id,
+                                                                               customer_id=customer.id)
+    return reservation
 
 
 @router.get('/parking-lot/{reservation_id}',
@@ -145,3 +131,17 @@ async def parkinglot_activate_reservation(reservation_id: int,
                                           ):
     await reservations_service.activate_reservation(lot_id=lot.id,
                                                     reservation_id=reservation_id)
+
+
+@router.get('/{reservation_id}',
+            status_code=status.HTTP_200_OK,
+            response_model=Union[CustomerReservationAbstract,LotReservationAbstract])
+async def get_reservation_details(reservation_id:int,
+                                  user = Depends(get_user),
+                                  reservations_service: ReservationsService = Depends()):
+
+    reservation = await reservations_service.get_reservation_details(user_role=user["role"],
+                                                                      user_id=user["user"].id,
+                                                                      reservation_id=reservation_id
+                                                                      )
+    return reservation

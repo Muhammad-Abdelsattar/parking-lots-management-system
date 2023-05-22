@@ -234,6 +234,7 @@ class ReservationsService:
                                       reservation_id:int
                                       ):
 
+
         if(user_role == EnumUserRole.customer):
             return await self.get_customer_detailed_reservation(customer_id=user_id,
                                                                 reservation_id=reservation_id)
